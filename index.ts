@@ -1,8 +1,6 @@
 import type { Equal, Expect } from '@type-challenges/utils'
-import type { TokenTypes } from './basic'
 import type { Parser } from './parser'
 import type { Tokenize } from './tokenizer'
-import type { SplitArrayChildren } from './type-util'
 
 type TokenType =
   | 'BEGIN_OBJECT'

@@ -1,28 +1,29 @@
 import type { TokenTypes } from './basic'
-import type { SplitArrayChildren } from './type-util'
+import type { SplitArrayChildren, SplitObjectProperties } from './type-util'
 
 type ParserObject<Input extends [...any]> = Input extends [TokenTypes['BEGIN_OBJECT'], ...infer Children, infer End]
   ? End extends TokenTypes['END_OBJECT']
     ? Children['length'] extends 0
       ? { type: 'Object'; children: [] }
-      : { type: 'Object'; children: [ParserProperty<Children>] }
+      : { type: 'Object'; children: [ParserProperty<SplitObjectProperties<Input>>] }
     : 'Unexpected end of JSON object'
   : 'Unexpected a JSON input object'
 
-type ParserProperty<Input extends [...any]> = Input extends [
-  TokenTypes['STRING'],
-  TokenTypes['SEP_COLON'],
-  ...infer Value
-]
-  ? {
-      type: 'Property'
-      key: {
-        type: 'Identifier'
-        value: Input[0]
-      }
-      value: Parser<Value>
-    }
-  : never
+type ParserProperty<Input, Result = {}> = Input extends [infer Key, infer Value, ...infer Rest]
+  ? Value extends [...any]
+    ? ParserProperty<
+        Rest,
+        {
+          type: 'Property'
+          key: {
+            type: 'Identifier'
+            value: Key
+          }
+          value: Parser<Value>
+        }
+      >
+    : Result
+  : Result
 
 type ParserList<Input extends [...any]> = Input extends [infer First, ...infer Next]
   ? First extends string

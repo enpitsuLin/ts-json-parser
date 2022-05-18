@@ -13,3 +13,16 @@ type _RemoveComma<Input extends [...any]> = Input extends [infer First, ',', ...
   : Input
 
 export type SplitArrayChildren<Input extends [...any]> = _SplitComma<_RemoveComma<Input>>
+
+type _SplitPropertiesComma<Input extends [...any]> = _SplitComma<Input>
+
+type _RemoveColonAndComma<Input extends [...any], Result extends [...any] = []> = Input extends [
+  infer First,
+  ...infer Next
+]
+  ? First extends TokenTypes['SEP_COLON'] | TokenTypes['SEP_COMMA']
+    ? _RemoveColonAndComma<Next, Result>
+    : _RemoveColonAndComma<Next, [...Result, First]>
+  : Result
+
+export type SplitObjectProperties<Input extends [...any]> = _RemoveColonAndComma<_SplitPropertiesComma<Input>>
