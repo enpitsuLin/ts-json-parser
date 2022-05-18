@@ -1,17 +1,37 @@
 import type { TokenTypes } from './basic'
 import type { SplitArrayChildren, SplitObjectProperties } from './type-util'
 
+interface Object<Children extends any[]> {
+  type: 'object'
+  children: Children
+}
+
+interface Array<Children extends any[]> {
+  type: 'array'
+  children: Children
+}
+
 interface Property<Key, Value> {
   type: 'Property'
-  key: { type: 'Identifier'; value: Key }
-  value: { type: 'Literal'; value: Value }
+  key: Identifier<Key>
+  value: Literal<Value>
+}
+
+interface Identifier<Value> {
+  type: 'Identifier'
+  value: Value
+}
+
+interface Literal<Value> {
+  type: 'Literal'
+  value: Value
 }
 
 type ParserObject<Input extends [...any]> = Input extends [TokenTypes['BEGIN_OBJECT'], ...infer Children, infer End]
   ? End extends TokenTypes['END_OBJECT']
     ? Children['length'] extends 0
-      ? { type: 'Object'; children: [] }
-      : { type: 'Object'; children: ParserProperty<SplitObjectProperties<Children>> }
+      ? Object<[]>
+      : Object<ParserProperty<SplitObjectProperties<Children>>>
     : 'Unexpected end of JSON object'
   : 'Unexpected a JSON input object'
 
@@ -23,7 +43,7 @@ type ParserProperty<Input, Result extends [...any] = []> = Input extends [infer 
 
 type ParserList<Input extends [...any]> = Input extends [infer First, ...infer Next]
   ? First extends string
-    ? [{ type: 'Literal'; value: First }, ...ParserList<Next>]
+    ? [Literal<First>, ...ParserList<Next>]
     : First extends any[]
     ? [Parser<First>, ...ParserList<Next>]
     : 'Error'
@@ -34,8 +54,8 @@ type ParserArrayChildren<Input extends [...any]> = ParserList<SplitArrayChildren
 type ParserArray<Input extends [...any]> = Input extends [TokenTypes['BEGIN_ARRAY'], ...infer Children, infer End]
   ? End extends TokenTypes['END_ARRAY']
     ? Children['length'] extends 0
-      ? { type: 'Array'; children: [] }
-      : { type: 'Array'; children: ParserArrayChildren<Children> }
+      ? Array<[]>
+      : Array<ParserArrayChildren<Children>>
     : 'Unexpected end of JSON array'
   : 'Unexpected a JSON input array'
 
@@ -45,6 +65,6 @@ export type Parser<Tokens extends [...any]> = Tokens extends [infer First, ...in
     : First extends TokenTypes['BEGIN_ARRAY']
     ? ParserArray<Tokens>
     : First extends TokenTypes['NULL']
-    ? { type: 'Literal'; value: null }
-    : { type: 'Literal'; value: First }
+    ? Literal<null>
+    : Literal<First>
   : []
