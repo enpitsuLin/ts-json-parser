@@ -20,6 +20,8 @@ export type Tokenize<Input extends string> = Input extends `${infer F}${infer U}
     ? [TokenTypes['SEP_COMMA'], ...Tokenize<U>]
     : F extends Numeric
     ? never
+    : F extends ' '
+    ? Tokenize<U>
     : ReadingString<`${F}${U}`>
   : []
 
