@@ -21,7 +21,8 @@ interface TokenTypes {
   END_ARRAY: ']'
   SEP_COLON: ':'
   SEP_COMMA: ','
-  NULL: null
+  NULL: 'null'
+  STRING: string
 }
 
 /**
@@ -52,34 +53,57 @@ type Tokenize<Input extends string> = Input extends `${infer F}${infer U}`
  */
 type ReadingString<String extends string> = String extends `"${infer U}"${infer Rest}` ? [U, ...Tokenize<Rest>] : never
 
-type ParserObject<Input extends [...any]> = Input extends [TokenTypes['BEGIN_OBJECT'], ...infer Children, infer End]
+type ParserObject<Input extends readonly [...any]> = Input extends [
+  TokenTypes['BEGIN_OBJECT'],
+  ...infer Children,
+  infer End
+]
   ? End extends TokenTypes['END_OBJECT']
     ? Children['length'] extends 0
       ? { type: 'Object'; children: [] }
-      : { type: 'Object'; children: [Parser<Children>] }
+      : { type: 'Object'; children: [ParserProperty<Children>] }
     : 'Unexpected end of JSON object'
-  : 'Unexpected a JSON input'
+  : 'Unexpected a JSON input object'
 
-type ParserArray<Input extends [...any]> = Input extends [TokenTypes['BEGIN_ARRAY'], ...infer Children, infer End]
+type ParserProperty<Input extends readonly [...any]> = Input extends [
+  TokenTypes['STRING'],
+  TokenTypes['SEP_COLON'],
+  ...infer Value
+]
+  ? {
+      type: 'Property'
+      key: {
+        type: 'Identifier'
+        value: Input[0]
+      }
+      value: Parser<Value>
+    }
+  : never
+
+type ParserArray<Input extends readonly [...any]> = Input extends [
+  TokenTypes['BEGIN_ARRAY'],
+  ...infer Children,
+  infer End
+]
   ? End extends TokenTypes['END_ARRAY']
     ? Children['length'] extends 0
       ? { type: 'Array'; children: [] }
-      : { type: 'Array'; children: [Parser<Children>, Children] }
+      : { type: 'Array'; children: Children }
     : 'Unexpected end of JSON array'
-  : 'Unexpected a JSON input'
+  : 'Unexpected a JSON input array'
 
-type Parser<Tokens extends [...any]> = Tokens extends [infer First, ...infer Next]
+type Parser<Tokens extends readonly [...any]> = Tokens extends [infer First, ...infer Next]
   ? First extends TokenTypes['BEGIN_OBJECT']
     ? ParserObject<Tokens>
     : First extends TokenTypes['BEGIN_ARRAY']
     ? ParserArray<Tokens>
     : First extends TokenTypes['NULL']
     ? { type: 'Literal'; value: null }
-    : Next
+    : { type: 'Literal'; value: First }
   : []
 
-type _Test_Array = Parser<['[', null, ']']>
-type _Test_Object = Parser<['{', 'foo', ':', '[', null, ',', '123', ']', '}']>
+type _Test_Array = Parser<['[', 'null', ',', '{', 'foo', ':', 'bar', '}', ']']>
+type _Test_Object = Parser<['{', 'foo', ':', '[', 'null', ',', '123', ']', '}']>
 
 type cases = [
   Expect<
