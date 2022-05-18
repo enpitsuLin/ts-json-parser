@@ -25,6 +25,8 @@ interface TokenTypes {
 
 /**
  * Tokenize
+ * - When char is number will be **never**, a number. 
+ * - Parsing the numbers is technically possible, but compiler will throw Type instantiation is excessively deep.
  */
 type Tokenize<Input extends string> = Input extends `${infer F}${infer U}`
   ? F extends TokenTypes['BEGIN_OBJECT']
