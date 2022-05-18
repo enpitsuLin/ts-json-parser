@@ -56,7 +56,13 @@ type ReadingString<String extends string> = String extends `"${infer U}"${infer 
  */
 type JudgeString<S extends string> = S extends 'true' ? true : S extends 'false' ? false : S extends 'null' ? null : S
 
-const json = '{"foo":"null","bar":["true","false","2"]}'
-type tokens = Tokenize<'{"foo":"null","bar":["true","false","2","\u1234"]}'>
+type cases = [
+  Expect<
+    Equal<
+      Tokenize<'{"foo":"null","bar":["true","false","2"]}'>,
+      ['{', 'foo', ':', null, ',', 'bar', ':', '[', true, ',', false, ',', '2', ']', '}']
+    >
+  >
+]
 
 export {}
