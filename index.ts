@@ -1,4 +1,6 @@
 import type { Equal, Expect } from '@type-challenges/utils'
+import type { TokenTypes } from './basic'
+import { SplitArrayChildren } from './type-util'
 
 type Numeric = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 
@@ -13,17 +15,6 @@ type TokenType =
   | 'BOOLEAN'
   | 'SEP_COLON'
   | 'SEP_COMMA'
-
-interface TokenTypes {
-  BEGIN_OBJECT: '{'
-  END_OBJECT: '}'
-  BEGIN_ARRAY: '['
-  END_ARRAY: ']'
-  SEP_COLON: ':'
-  SEP_COMMA: ','
-  NULL: 'null'
-  STRING: string
-}
 
 /**
  * Tokenize
@@ -53,11 +44,7 @@ type Tokenize<Input extends string> = Input extends `${infer F}${infer U}`
  */
 type ReadingString<String extends string> = String extends `"${infer U}"${infer Rest}` ? [U, ...Tokenize<Rest>] : never
 
-type ParserObject<Input extends readonly [...any]> = Input extends [
-  TokenTypes['BEGIN_OBJECT'],
-  ...infer Children,
-  infer End
-]
+type ParserObject<Input extends [...any]> = Input extends [TokenTypes['BEGIN_OBJECT'], ...infer Children, infer End]
   ? End extends TokenTypes['END_OBJECT']
     ? Children['length'] extends 0
       ? { type: 'Object'; children: [] }
@@ -65,7 +52,7 @@ type ParserObject<Input extends readonly [...any]> = Input extends [
     : 'Unexpected end of JSON object'
   : 'Unexpected a JSON input object'
 
-type ParserProperty<Input extends readonly [...any]> = Input extends [
+type ParserProperty<Input extends [...any]> = Input extends [
   TokenTypes['STRING'],
   TokenTypes['SEP_COLON'],
   ...infer Value
@@ -80,11 +67,7 @@ type ParserProperty<Input extends readonly [...any]> = Input extends [
     }
   : never
 
-type ParserArray<Input extends readonly [...any]> = Input extends [
-  TokenTypes['BEGIN_ARRAY'],
-  ...infer Children,
-  infer End
-]
+type ParserArray<Input extends [...any]> = Input extends [TokenTypes['BEGIN_ARRAY'], ...infer Children, infer End]
   ? End extends TokenTypes['END_ARRAY']
     ? Children['length'] extends 0
       ? { type: 'Array'; children: [] }
@@ -92,7 +75,7 @@ type ParserArray<Input extends readonly [...any]> = Input extends [
     : 'Unexpected end of JSON array'
   : 'Unexpected a JSON input array'
 
-type Parser<Tokens extends readonly [...any]> = Tokens extends [infer First, ...infer Next]
+type Parser<Tokens extends [...any]> = Tokens extends [infer First, ...infer Next]
   ? First extends TokenTypes['BEGIN_OBJECT']
     ? ParserObject<Tokens>
     : First extends TokenTypes['BEGIN_ARRAY']
