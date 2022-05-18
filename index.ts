@@ -25,7 +25,7 @@ interface TokenTypes {
 
 /**
  * Tokenize
- * - When char is number will be **never**, a number. 
+ * - When char is number will be **never**, a number.
  * - Parsing the numbers is technically possible, but compiler will throw Type instantiation is excessively deep.
  */
 type Tokenize<Input extends string> = Input extends `${infer F}${infer U}`
@@ -57,6 +57,20 @@ type ReadingString<String extends string> = String extends `"${infer U}"${infer 
  * Judge whether a string literal is boolean/null
  */
 type JudgeString<S extends string> = S extends 'true' ? true : S extends 'false' ? false : S extends 'null' ? null : S
+
+type ParserObject<Input extends [...any]> = Input extends [TokenTypes['BEGIN_OBJECT'], ...infer Children, infer End]
+  ? End extends TokenTypes['END_OBJECT']
+    ? { type: 'Object'; children: Children }
+    : 'Unexpected end of JSON input'
+  : 'Unexpected a JSON input'
+
+type Parser<Tokens extends [...any]> = Tokens extends [infer First, ...infer Next]
+  ? First extends TokenTypes['BEGIN_OBJECT']
+    ? ParserObject<Tokens>
+    : []
+  : never
+
+type _Test = Parser<['{', 'foo', ':', null, '}']>
 
 type cases = [
   Expect<
