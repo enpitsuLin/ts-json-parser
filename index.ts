@@ -15,7 +15,7 @@ type TokenType =
   | 'SEP_COMMA'
 
 type _Test_Array = Parser<['[', 'null', ',', '{', 'foo', ':', 'bar', '}', ']']>
-type _Test_Object = Parser<['{', 'foo', ':', '[', 'null', ',', '123', ']', ',', 'bar', ':', 'foo', '}']>
+type _Test_Object = Parser<['{', 'foo', ':', 'null', ',', 'bar', ':', '[', 'true', ',', 'false', ',', '2', ']', '}']>
 
 type ParserTest = Parser<Tokenize<'{"foo":"null","bar":["true","false","2"]}'>>
 
