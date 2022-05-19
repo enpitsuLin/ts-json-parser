@@ -37,7 +37,7 @@ type ParserObject<Input extends [...any]> = Input extends [TokenTypes['BEGIN_OBJ
 
 type ParserProperty<Input, Result extends [...any] = []> = Input extends [infer Key, infer Value, ...infer Rest]
   ? Value extends [...any]
-    ? ParserProperty<Rest, [Property<Key, Parser<Value>>]>
+    ? ParserProperty<Rest, [...Result, Property<Key, Parser<Value>>]>
     : ParserProperty<Rest, [...Result, Property<Key, Value>]>
   : Result
 
