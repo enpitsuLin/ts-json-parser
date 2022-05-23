@@ -24,4 +24,7 @@ type ExpectTokens = [
   { type: 'END_OBJECT' }
 ]
 
-type cases = [Expect<Equal<Tokens, ExpectTokens>>]
+type cases = [
+  Expect<Equal<Tokens, ExpectTokens>>,
+  Expect<Equal<Result, { identifier: null; array: [true, false, 'string'] }>>
+]
