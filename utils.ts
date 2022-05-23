@@ -25,3 +25,9 @@ export type Alpha =
   | 'x'
   | 'y'
   | 'z'
+
+export type Pure<T> = T extends object
+  ? {
+      [P in keyof T]: Pure<T[P]>
+    }
+  : T
