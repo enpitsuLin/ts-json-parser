@@ -20,16 +20,16 @@ type ParsePair<Tokens extends Token[]> = ParseString<Tokens> extends never
       ]
   : never
 
-type ParseRecordImpl<Tokens extends Token[], S = {}> = ParsePair<Tokens> extends never
+type ParseRecordImpl<Tokens extends Token[], TargetRecord = {}> = ParsePair<Tokens> extends never
   ? never
   : TakeToken<ParsePair<Tokens>[1]> extends never
   ? never
   : TakeToken<ParsePair<Tokens>[1]>[0]['type'] extends 'END_OBJECT'
-  ? [SetProperty<S, ParsePair<Tokens>[0][0], ParsePair<Tokens>[0][1]>, TakeToken<ParsePair<Tokens>[1]>[1]]
+  ? [SetProperty<TargetRecord, ParsePair<Tokens>[0][0], ParsePair<Tokens>[0][1]>, TakeToken<ParsePair<Tokens>[1]>[1]]
   : TakeToken<ParsePair<Tokens>[1]>[0]['type'] extends 'SEP_COMMA'
   ? ParseRecordImpl<
       TakeToken<ParsePair<Tokens>[1]>[1],
-      SetProperty<S, ParsePair<Tokens>[0][0], ParsePair<Tokens>[0][1]>
+      SetProperty<TargetRecord, ParsePair<Tokens>[0][0], ParsePair<Tokens>[0][1]>
     >
   : never
 
@@ -38,26 +38,26 @@ type ParseRecord<Tokens extends Token[]> = Tokens extends [infer FirstToken, ...
     ? RestTokens extends Token[]
       ? FirstToken['type'] extends 'END_OBJECT'
         ? [{}, RestTokens]
-        : ParseRecordImpl<Tokens, {}>
+        : ParseRecordImpl<Tokens>
       : never
     : never
   : never
 
-type ParseArrayImpl<Tokens extends Token[], S extends unknown[] = []> = ParseLiteral<Tokens> extends never
+type ParseArrayImpl<Tokens extends Token[], TargetArray extends unknown[] = []> = ParseLiteral<Tokens> extends never
   ? never
   : TakeToken<ParseLiteral<Tokens>[1]> extends never
   ? never
   : TakeToken<ParseLiteral<Tokens>[1]>[0]['type'] extends 'SEP_COMMA'
-  ? ParseArrayImpl<TakeToken<ParseLiteral<Tokens>[1]>[1], [...S, ParseLiteral<Tokens>[0]]>
+  ? ParseArrayImpl<TakeToken<ParseLiteral<Tokens>[1]>[1], [...TargetArray, ParseLiteral<Tokens>[0]]>
   : TakeToken<ParseLiteral<Tokens>[1]>[0]['type'] extends 'END_ARRAY'
-  ? [[...S, ParseLiteral<Tokens>[0]], TakeToken<ParseLiteral<Tokens>[1]>[1]]
+  ? [[...TargetArray, ParseLiteral<Tokens>[0]], TakeToken<ParseLiteral<Tokens>[1]>[1]]
   : never
 
-type ParseArray<T extends Token[]> = T extends [infer P, ...infer E]
-  ? [P, E] extends [Token, Token[]]
-    ? [P, E][0]['type'] extends 'END_ARRAY'
-      ? [[], E]
-      : ParseArrayImpl<T, []>
+type ParseArray<Tokens extends Token[]> = Tokens extends [infer FirstToken, ...infer RestTokens]
+  ? [FirstToken, RestTokens] extends [Token, Token[]]
+    ? [FirstToken, RestTokens][0]['type'] extends 'END_ARRAY'
+      ? [[], RestTokens]
+      : ParseArrayImpl<Tokens>
     : never
   : never
 
