@@ -31,3 +31,7 @@ export type Pure<T> = T extends object
       [P in keyof T]: Pure<T[P]>
     }
   : T
+
+export type SetProperty<T, K extends PropertyKey, V> = {
+  [P in keyof T | K]: P extends K ? V : P extends keyof T ? T[P] : never
+}

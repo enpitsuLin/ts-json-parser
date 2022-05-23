@@ -1,7 +1,10 @@
 import type { Expect, Equal } from '@type-challenges/utils'
 import type { Tokenize } from './tokenizer'
+import type { Parse } from './parser'
 
 type Tokens = Tokenize<'{"identifier":null,"array":[true,false,"string"]}'>
+
+type Result = Parse<'{"identifier":null,"array":[true,false,"string"]}'>
 
 type ExpectTokens = [
   { type: 'BEGIN_OBJECT' },
