@@ -3,8 +3,8 @@ import type { Pure, SetProperty } from './utils'
 
 type TakeToken<Tokens extends Token[]> = Tokens extends [infer FirstToken, ...infer RestTokens]
   ? [FirstToken, RestTokens] extends [Token, Token[]]
-    ? [FirstToken, RestTokens]
-    : never
+  ? [FirstToken, RestTokens]
+  : never
   : never
 
 type ParsePair<Tokens extends Token[]> = ParseString<Tokens> extends never
@@ -13,11 +13,11 @@ type ParsePair<Tokens extends Token[]> = ParseString<Tokens> extends never
   ? never
   : TakeToken<ParseString<Tokens>[1]>[0]['type'] extends 'SEP_COLON'
   ? ParseLiteral<TakeToken<ParseString<Tokens>[1]>[1]> extends never
-    ? never
-    : [
-        [ParseString<Tokens>[0], ParseLiteral<TakeToken<ParseString<Tokens>[1]>[1]>[0]],
-        ParseLiteral<TakeToken<ParseString<Tokens>[1]>[1]>[1]
-      ]
+  ? never
+  : [
+    [ParseString<Tokens>[0], ParseLiteral<TakeToken<ParseString<Tokens>[1]>[1]>[0]],
+    ParseLiteral<TakeToken<ParseString<Tokens>[1]>[1]>[1]
+  ]
   : never
 
 type ParseRecordImpl<Tokens extends Token[], TargetRecord = {}> = ParsePair<Tokens> extends never
@@ -28,19 +28,19 @@ type ParseRecordImpl<Tokens extends Token[], TargetRecord = {}> = ParsePair<Toke
   ? [SetProperty<TargetRecord, ParsePair<Tokens>[0][0], ParsePair<Tokens>[0][1]>, TakeToken<ParsePair<Tokens>[1]>[1]]
   : TakeToken<ParsePair<Tokens>[1]>[0]['type'] extends 'SEP_COMMA'
   ? ParseRecordImpl<
-      TakeToken<ParsePair<Tokens>[1]>[1],
-      SetProperty<TargetRecord, ParsePair<Tokens>[0][0], ParsePair<Tokens>[0][1]>
-    >
+    TakeToken<ParsePair<Tokens>[1]>[1],
+    SetProperty<TargetRecord, ParsePair<Tokens>[0][0], ParsePair<Tokens>[0][1]>
+  >
   : never
 
 type ParseRecord<Tokens extends Token[]> = Tokens extends [infer FirstToken, ...infer RestTokens]
   ? FirstToken extends Token
-    ? RestTokens extends Token[]
-      ? FirstToken['type'] extends 'END_OBJECT'
-        ? [{}, RestTokens]
-        : ParseRecordImpl<Tokens>
-      : never
-    : never
+  ? RestTokens extends Token[]
+  ? FirstToken['type'] extends 'END_OBJECT'
+  ? [{}, RestTokens]
+  : ParseRecordImpl<Tokens>
+  : never
+  : never
   : never
 
 type ParseArrayImpl<Tokens extends Token[], TargetArray extends unknown[] = []> = ParseLiteral<Tokens> extends never
@@ -55,10 +55,10 @@ type ParseArrayImpl<Tokens extends Token[], TargetArray extends unknown[] = []> 
 
 type ParseArray<Tokens extends Token[]> = Tokens extends [infer FirstToken, ...infer RestTokens]
   ? [FirstToken, RestTokens] extends [Token, Token[]]
-    ? [FirstToken, RestTokens][0]['type'] extends 'END_ARRAY'
-      ? [[], RestTokens]
-      : ParseArrayImpl<Tokens>
-    : never
+  ? [FirstToken, RestTokens][0]['type'] extends 'END_ARRAY'
+  ? [[], RestTokens]
+  : ParseArrayImpl<Tokens>
+  : never
   : never
 
 type ParseString<Tokens extends Token[]> = TakeToken<Tokens> extends never
@@ -71,12 +71,12 @@ type ParseKeyword<Tokens extends Token[]> = TakeToken<Tokens> extends never
   ? never
   : TakeToken<Tokens>[0]['type'] extends 'NULL' | 'BOOLEAN'
   ? Exclude<TakeToken<Tokens>[0]['value'], undefined> extends 'true'
-    ? [true, TakeToken<Tokens>[1]]
-    : Exclude<TakeToken<Tokens>[0]['value'], undefined> extends 'false'
-    ? [false, TakeToken<Tokens>[1]]
-    : Exclude<TakeToken<Tokens>[0]['value'], undefined> extends 'null'
-    ? [null, TakeToken<Tokens>[1]]
-    : never
+  ? [true, TakeToken<Tokens>[1]]
+  : Exclude<TakeToken<Tokens>[0]['value'], undefined> extends 'false'
+  ? [false, TakeToken<Tokens>[1]]
+  : Exclude<TakeToken<Tokens>[0]['value'], undefined> extends 'null'
+  ? [null, TakeToken<Tokens>[1]]
+  : never
   : never
 
 type ParseRoot<Tokens extends Token[]> = TakeToken<Tokens> extends never

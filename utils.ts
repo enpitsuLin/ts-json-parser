@@ -28,8 +28,8 @@ export type Alpha =
 
 export type Pure<T> = T extends object
   ? {
-      [P in keyof T]: Pure<T[P]>
-    }
+    [P in keyof T]: Pure<T[P]>
+  }
   : T
 
 export type SetProperty<T, K extends PropertyKey, V> = {
