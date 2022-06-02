@@ -5,18 +5,15 @@ type TakeToken<Tokens extends Token[]> = Tokens extends [infer FirstToken extend
   ? [FirstToken, RestTokens]
   : never
 
-type ParsePair<Tokens extends Token[]> = ParseString<Tokens> extends never
-  ? ParseString<Tokens>
-  : TakeToken<ParseString<Tokens>[1]> extends never
-  ? never
-  : TakeToken<ParseString<Tokens>[1]>[0]['type'] extends 'SEP_COLON'
-  ? ParseLiteral<TakeToken<ParseString<Tokens>[1]>[1]> extends never
-  ? never
-  : [
-    [ParseString<Tokens>[0], ParseLiteral<TakeToken<ParseString<Tokens>[1]>[1]>[0]],
-    ParseLiteral<TakeToken<ParseString<Tokens>[1]>[1]>[1]
-  ]
-  : never
+type ParsePair<Tokens extends Token[]> = ParseString<Tokens> extends [infer Value extends string, infer NextTokens extends Token[]] ? (
+  TakeToken<NextTokens> extends [infer NextFirstToken extends Token, infer NextRestTokens extends Token[]] ? (
+    NextFirstToken['type'] extends 'SEP_COLON'
+    ? ParseLiteral<NextRestTokens> extends [infer A, infer B] ? [[Value, A], B]
+    : never
+    : never
+  ) : never
+) : never
+
 
 type ParseRecordImpl<Tokens extends Token[], TargetRecord = {}> = ParsePair<Tokens> extends never
   ? never
@@ -51,10 +48,10 @@ type ParseArray<Tokens extends Token[]> = Tokens extends [infer FirstToken exten
   : ParseArrayImpl<Tokens>
   : never
 
-type ParseString<Tokens extends Token[]> = TakeToken<Tokens> extends never
-  ? never
-  : TakeToken<Tokens>[0]['type'] extends 'STRING'
-  ? [Exclude<TakeToken<Tokens>[0]['value'], undefined>, TakeToken<Tokens>[1]]
+type ParseString<Tokens extends Token[]> = TakeToken<Tokens> extends [infer FirstToken extends Token, infer RestTokens extends Token[]]
+  ? FirstToken['type'] extends "STRING"
+  ? [Exclude<FirstToken['value'], undefined>, RestTokens]
+  : never
   : never
 
 type ParseKeyword<Tokens extends Token[]> = TakeToken<Tokens> extends never
