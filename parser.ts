@@ -1,10 +1,8 @@
 import type { Token, Tokenize } from './tokenizer'
 import type { Pure, SetProperty } from './utils'
 
-type TakeToken<Tokens extends Token[]> = Tokens extends [infer FirstToken, ...infer RestTokens]
-  ? [FirstToken, RestTokens] extends [Token, Token[]]
+type TakeToken<Tokens extends Token[]> = Tokens extends [infer FirstToken extends Token, ...infer RestTokens extends Token[]]
   ? [FirstToken, RestTokens]
-  : never
   : never
 
 type ParsePair<Tokens extends Token[]> = ParseString<Tokens> extends never
@@ -33,14 +31,8 @@ type ParseRecordImpl<Tokens extends Token[], TargetRecord = {}> = ParsePair<Toke
   >
   : never
 
-type ParseRecord<Tokens extends Token[]> = Tokens extends [infer FirstToken, ...infer RestTokens]
-  ? FirstToken extends Token
-  ? RestTokens extends Token[]
-  ? FirstToken['type'] extends 'END_OBJECT'
-  ? [{}, RestTokens]
-  : ParseRecordImpl<Tokens>
-  : never
-  : never
+type ParseRecord<Tokens extends Token[]> = Tokens extends [infer FirstToken extends Token, ...infer RestTokens extends Token[]]
+  ? FirstToken['type'] extends 'END_OBJECT' ? [{}, RestTokens] : ParseRecordImpl<Tokens>
   : never
 
 type ParseArrayImpl<Tokens extends Token[], TargetArray extends unknown[] = []> = ParseLiteral<Tokens> extends never
@@ -53,12 +45,10 @@ type ParseArrayImpl<Tokens extends Token[], TargetArray extends unknown[] = []> 
   ? [[...TargetArray, ParseLiteral<Tokens>[0]], TakeToken<ParseLiteral<Tokens>[1]>[1]]
   : never
 
-type ParseArray<Tokens extends Token[]> = Tokens extends [infer FirstToken, ...infer RestTokens]
-  ? [FirstToken, RestTokens] extends [Token, Token[]]
-  ? [FirstToken, RestTokens][0]['type'] extends 'END_ARRAY'
+type ParseArray<Tokens extends Token[]> = Tokens extends [infer FirstToken extends Token, ...infer RestTokens extends Token[]]
+  ? FirstToken['type'] extends 'END_ARRAY'
   ? [[], RestTokens]
   : ParseArrayImpl<Tokens>
-  : never
   : never
 
 type ParseString<Tokens extends Token[]> = TakeToken<Tokens> extends never
